@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Cinema Booking Notifier</title>
+  <style>
+    body {
+      font-family: system-ui, sans-serif;
+      max-width: 480px;
+      margin: 60px auto;
+      padding: 0 20px;
+      color: #222;
+    }
+    h1 { font-size: 1.4rem; }
+    label { display: block; margin-top: 16px; font-weight: 600; }
+    input, select {
+      width: 100%;
+      padding: 8px;
+      margin-top: 4px;
+      box-sizing: border-box;
+      font-size: 1rem;
+    }
+    button {
+      margin-top: 24px;
+      padding: 10px 16px;
+      font-size: 1rem;
+      cursor: pointer;
+    }
+    .hint { font-size: 0.85rem; color: #666; margin-top: 4px; }
+    #dateField { display: block; }
+    .success { color: green; margin-top: 16px; }
+  </style>
+</head>
+<body>
+  <h1>🎬 Get notified when booking opens</h1>
+  <p>Enter a movie and cinema, and we'll email you the moment tickets become bookable.</p>
+
+  <form id="notifyForm" action="/notify-me" method="POST">
+    <label for="email">Your email</label>
+    <input type="email" id="email" name="email" required placeholder="you@example.com" />
+
+    <label for="cinema">Cinema</label>
+    <select id="cinema" name="cinema" required>
+      <option value="" disabled selected>Loading cinemas...</option>
+    </select>
+
+    <label for="movie">Movie</label>
+    <select id="movie" name="movie" required>
+      <option value="" disabled selected>Loading movies...</option>
+    </select>
+
+    <label for="type">Watch mode</label>
+    <select id="type" name="type">
+      <option value="movie">Notify me when ANY new date opens for this movie</option>
+      <option value="date">Notify me for one specific date</option>
+    </select>
+
+    <div id="dateField" style="display: none;">
+      <label for="date">Date</label>
+      <input type="date" id="date" name="date" />
+    </div>
+
+    <button type="submit">Notify Me</button>
+  </form>
+
+  <p id="successMsg" class="success" style="display:none;">You're all set - we'll email you when it opens!</p>
+
+  <script>
+    const typeSelect = document.getElementById('type');
+    const dateField = document.getElementById('dateField');
+    const dateInput = document.getElementById('date');
+    const cinemaSelect = document.getElementById('cinema');
+    const movieSelect = document.getElementById('movie');
+
+    typeSelect.addEventListener('change', () => {
+      const isDateMode = typeSelect.value === 'date';
+      dateField.style.display = isDateMode ? 'block' : 'none';
+      dateInput.required = isDateMode;
+    });
+
+    // Populate cinema + movie dropdowns from the server's cached VOX data.
+    async function loadOptions() {
+      try {
+        const res = await fetch('/options');
+        const { cinemas, nowShowing, comingSoon } = await res.json();
+
+        cinemaSelect.innerHTML = '';
+        if (cinemas.length === 0) {
+          cinemaSelect.innerHTML = '<option value="" disabled selected>No cinemas available yet - try again shortly</option>';
+        } else {
+          cinemaSelect.innerHTML =
+            '<option value="" disabled selected>Select a cinema</option>' +
+            cinemas.map((c) => `<option value="${c.slug}">${c.name}</option>`).join('');
+        }
+
+        movieSelect.innerHTML = '';
+        if (nowShowing.length === 0 && comingSoon.length === 0) {
+          movieSelect.innerHTML = '<option value="" disabled selected>No movies available yet - try again shortly</option>';
+        } else {
+          let html = '<option value="" disabled selected>Select a movie</option>';
+          if (nowShowing.length > 0) {
+            html += `<optgroup label="Now Showing">${nowShowing
+              .map((m) => `<option value="${m.slug}">${m.title}</option>`)
+              .join('')}</optgroup>`;
+          }
+          if (comingSoon.length > 0) {
+            html += `<optgroup label="Coming Soon">${comingSoon
+              .map((m) => `<option value="${m.slug}">${m.title}</option>`)
+              .join('')}</optgroup>`;
+          }
+          movieSelect.innerHTML = html;
+        }
+      } catch (err) {
+        cinemaSelect.innerHTML = '<option value="" disabled selected>Failed to load - refresh the page</option>';
+        movieSelect.innerHTML = '<option value="" disabled selected>Failed to load - refresh the page</option>';
+      }
+    }
+
+    loadOptions();
+
+    document.getElementById('notifyForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const formData = new FormData(e.target);
+      const body = Object.fromEntries(formData.entries());
+
+      const res = await fetch('/notify-me', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(body),
+      });
+
+      if (res.ok) {
+        document.getElementById('successMsg').style.display = 'block';
+        e.target.reset();
+        dateField.style.display = 'none';
+      } else {
+        alert('Something went wrong - please try again.');
+      }
+    });
+  </script>
+</body>
+</html>
