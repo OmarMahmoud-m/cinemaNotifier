@@ -76,10 +76,32 @@ app.listen(PORT, () => {
 // --- Background scheduler ---
 // Runs every 10 minutes. Since watch state is persisted in SQLite (not
 // in-memory), this is safe even if the server restarts between runs.
-cron.schedule('*/10 * * * *', () => {
-  console.log(`\n[${new Date().toISOString()}] Running scheduled check...`);
-  pollAllWatches().catch((err) => console.error('Poll cycle failed:', err));
-});
+//
+// IMPORTANT: guard against overlapping runs. If the number of unique
+// watched movies/cinemas grows large enough that a full poll cycle takes
+// longer than 10 minutes, the next scheduled trigger would otherwise fire
+// a SECOND poll while the first is still running - doubling memory usage
+// (two Chromium checks active at once) instead of just running slightly
+// behind schedule, which is the much safer failure mode.
+let isPolling = false;
+
+async function runPollCycle(label) {
+  if (isPolling) {
+    console.log(`[${new Date().toISOString()}] Skipping ${label} - previous poll cycle is still running.`);
+    return;
+  }
+  isPolling = true;
+  try {
+    console.log(`\n[${new Date().toISOString()}] Running ${label}...`);
+    await pollAllWatches();
+  } catch (err) {
+    console.error('Poll cycle failed:', err);
+  } finally {
+    isPolling = false;
+  }
+}
+
+cron.schedule('*/10 * * * *', () => runPollCycle('scheduled check'));
 
 // Cinema/movie dropdown options change far less often than showtimes do,
 // so refresh those every 3 hours instead of every 10 minutes.
@@ -87,6 +109,5 @@ cron.schedule('0 */3 * * *', refreshOptionsCache);
 
 // Run both once immediately on startup, so you don't have to wait for
 // the first scheduled cycle to see it working.
-console.log('Running an initial check on startup...');
-pollAllWatches().catch((err) => console.error('Initial poll failed:', err));
+runPollCycle('initial check on startup');
 refreshOptionsCache();
