@@ -4,7 +4,7 @@ const path = require('path');
 
 const { addWatch } = require('./db');
 const { pollAllWatches } = require('./checkBookingOpened');
-const { getCinemas, getMovieOptions } = require('./voxScraper');
+const { getCinemas, getMovieOptions, closeBrowser } = require('./voxScraper');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -97,6 +97,16 @@ async function runPollCycle(label) {
   } catch (err) {
     console.error('Poll cycle failed:', err);
   } finally {
+    // Restart the browser between cycles (never mid-check) to clear out
+    // any memory that built up over the cycle, keeping us comfortably
+    // under Render's 512MB limit. Safe to do here since no check is
+    // running at this point - the next scheduled cycle just launches a
+    // fresh browser automatically via getBrowser().
+    try {
+      await closeBrowser();
+    } catch (err) {
+      console.error('Failed to close browser for recycling:', err.message);
+    }
     isPolling = false;
   }
 }
