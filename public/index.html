@@ -2,68 +2,296 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <title>Cinema Booking Notifier</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Booking Watch — Cinema Notifier</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Oswald:wght@500;600;700&family=Work+Sans:wght@400;500;600&display=swap" rel="stylesheet" />
   <style>
-    body {
-      font-family: system-ui, sans-serif;
-      max-width: 480px;
-      margin: 60px auto;
-      padding: 0 20px;
-      color: #222;
+    :root {
+      --bg: #15121a;
+      --bg-deep: #0f0d13;
+      --card: #1d1922;
+      --ivory: #f3ede1;
+      --ivory-dim: #b8b0c4;
+      --amber: #e8a33d;
+      --amber-dim: #a67428;
+      --teal: #4c9a8e;
+      --rule: #35303f;
     }
-    h1 { font-size: 1.4rem; }
-    label { display: block; margin-top: 16px; font-weight: 600; }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      background:
+        radial-gradient(ellipse 900px 500px at 50% -10%, #2a2233 0%, transparent 60%),
+        var(--bg);
+      color: var(--ivory);
+      font-family: 'Work Sans', sans-serif;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 48px 20px;
+    }
+
+    .wrap {
+      width: 100%;
+      max-width: 440px;
+    }
+
+    .marquee {
+      text-align: center;
+      margin-bottom: 28px;
+    }
+
+    .marquee .bulbs {
+      display: flex;
+      justify-content: center;
+      gap: 7px;
+      margin-bottom: 18px;
+    }
+
+    .marquee .bulbs span {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: var(--amber-dim);
+      animation: glow 2.4s ease-in-out infinite;
+    }
+
+    .marquee .bulbs span:nth-child(odd) { animation-delay: 0.15s; }
+    .marquee .bulbs span:nth-child(3n) { animation-delay: 0.4s; }
+
+    @keyframes glow {
+      0%, 100% { background: var(--amber-dim); box-shadow: none; }
+      50% { background: var(--amber); box-shadow: 0 0 8px 1px rgba(232, 163, 61, 0.6); }
+    }
+
+    .marquee h1 {
+      font-family: 'Oswald', sans-serif;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.02em;
+      font-size: clamp(1.9rem, 6vw, 2.5rem);
+      line-height: 1.05;
+      margin: 0 0 10px;
+      color: var(--ivory);
+    }
+
+    .marquee p {
+      color: var(--ivory-dim);
+      font-size: 0.95rem;
+      line-height: 1.5;
+      margin: 0;
+      max-width: 34ch;
+      margin-inline: auto;
+    }
+
+    .ticket {
+      position: relative;
+      background: var(--card);
+      border-radius: 14px;
+      padding: 30px 30px 30px;
+      box-shadow: 0 30px 60px -20px rgba(0, 0, 0, 0.6);
+    }
+
+    /* Stub header: label + perforation live in normal document flow now,
+       instead of being absolutely positioned with a hardcoded pixel
+       offset. This means the dashed line and notches always sit exactly
+       where the stub content actually ends, regardless of font-loading
+       timing, viewport width, or zoom level. */
+    .stub {
+      position: relative;
+      margin: 0 -30px 24px;
+      padding: 0 30px 16px;
+      border-bottom: 2px dashed var(--rule);
+    }
+
+    .stub::before,
+    .stub::after {
+      content: '';
+      position: absolute;
+      bottom: -11px;
+      width: 22px;
+      height: 22px;
+      background: var(--bg);
+      border-radius: 50%;
+    }
+    .stub::before { left: -11px; }
+    .stub::after { right: -11px; }
+
+    .stub-label {
+      font-family: 'Oswald', sans-serif;
+      font-size: 0.72rem;
+      letter-spacing: 0.14em;
+      color: var(--amber);
+      margin: 0;
+    }
+
+    .field {
+      margin-top: 22px;
+    }
+    .field:first-of-type { margin-top: 0; }
+
+    label {
+      display: block;
+      font-size: 0.82rem;
+      color: var(--ivory-dim);
+      margin-bottom: 6px;
+    }
+
     input, select {
       width: 100%;
-      padding: 8px;
-      margin-top: 4px;
-      box-sizing: border-box;
+      background: transparent;
+      border: none;
+      border-bottom: 1px solid var(--rule);
+      color: var(--ivory);
+      font-family: 'Work Sans', sans-serif;
       font-size: 1rem;
+      padding: 8px 2px;
+      appearance: none;
+      -webkit-appearance: none;
+      border-radius: 0;
+      transition: border-color 0.15s ease;
     }
+
+    select {
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%23b8b0c4' stroke-width='1.5' fill='none' fill-rule='evenodd'/%3E%3C/svg%3E");
+      background-repeat: no-repeat;
+      background-position: right 4px center;
+      padding-right: 20px;
+    }
+
+    /* Explicitly style optgroup labels - browsers use their own default
+       (usually a faint gray) that ignores the option styling below,
+       which made "Coming Soon" unreadable against the dark background. */
+    select optgroup {
+      background: var(--card);
+      color: var(--amber);
+      font-family: 'Work Sans', sans-serif;
+      font-style: normal;
+      font-weight: 600;
+    }
+
+    select option {
+      background: var(--card);
+      color: var(--ivory);
+      font-weight: 400;
+    }
+
+    input:focus, select:focus {
+      outline: none;
+      border-bottom-color: var(--amber);
+    }
+
+    input::placeholder { color: #6b6478; }
+
+    .hint {
+      font-size: 0.78rem;
+      color: #6b6478;
+      margin-top: 5px;
+    }
+
+    #dateField { display: none; }
+
     button {
-      margin-top: 24px;
-      padding: 10px 16px;
-      font-size: 1rem;
+      width: 100%;
+      margin-top: 30px;
+      padding: 14px;
+      background: var(--amber);
+      color: var(--bg-deep);
+      border: none;
+      border-radius: 8px;
+      font-family: 'Oswald', sans-serif;
+      font-size: 0.95rem;
+      font-weight: 600;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
       cursor: pointer;
+      transition: background 0.15s ease, transform 0.1s ease;
     }
-    .hint { font-size: 0.85rem; color: #666; margin-top: 4px; }
-    #dateField { display: block; }
-    .success { color: green; margin-top: 16px; }
+
+    button:hover { background: #f0b358; }
+    button:active { transform: scale(0.98); }
+
+    .success {
+      display: none;
+      align-items: center;
+      gap: 10px;
+      margin-top: 18px;
+      padding: 12px 14px;
+      background: rgba(76, 154, 142, 0.12);
+      border: 1px solid rgba(76, 154, 142, 0.4);
+      border-radius: 8px;
+      color: var(--teal);
+      font-size: 0.88rem;
+    }
+
+    .success .dot {
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      background: var(--teal);
+      flex-shrink: 0;
+    }
   </style>
 </head>
 <body>
-  <h1>🎬 Get notified when booking opens</h1>
-  <p>Enter a movie and cinema, and we'll email you the moment tickets become bookable.</p>
-
-  <form id="notifyForm" action="/notify-me" method="POST">
-    <label for="email">Your email</label>
-    <input type="email" id="email" name="email" required placeholder="you@example.com" />
-
-    <label for="cinema">Cinema</label>
-    <select id="cinema" name="cinema" required>
-      <option value="" disabled selected>Loading cinemas...</option>
-    </select>
-
-    <label for="movie">Movie</label>
-    <select id="movie" name="movie" required>
-      <option value="" disabled selected>Loading movies...</option>
-    </select>
-
-    <label for="type">Watch mode</label>
-    <select id="type" name="type">
-      <option value="movie">Notify me when ANY new date opens for this movie</option>
-      <option value="date">Notify me for one specific date</option>
-    </select>
-
-    <div id="dateField" style="display: none;">
-      <label for="date">Date</label>
-      <input type="date" id="date" name="date" />
+  <div class="wrap">
+    <div class="marquee">
+      <div class="bulbs">
+        <span></span><span></span><span></span><span></span><span></span><span></span><span></span>
+      </div>
+      <h1>Booking Watch</h1>
+      <p>Cinemas don't tell you when tickets go live. We'll watch the box office and email you the second they do.</p>
     </div>
 
-    <button type="submit">Notify Me</button>
-  </form>
+    <div class="ticket">
+      <div class="stub">
+        <p class="stub-label">ADMIT ONE &mdash; NOTIFICATION</p>
+      </div>
 
-  <p id="successMsg" class="success" style="display:none;">You're all set - we'll email you when it opens!</p>
+      <form id="notifyForm" action="/notify-me" method="POST">
+        <div class="field">
+          <label for="email">Your email</label>
+          <input type="email" id="email" name="email" required placeholder="you@example.com" />
+        </div>
+
+        <div class="field">
+          <label for="cinema">Cinema</label>
+          <select id="cinema" name="cinema" required>
+            <option value="" disabled selected>Loading cinemas…</option>
+          </select>
+        </div>
+
+        <div class="field">
+          <label for="movie">Movie</label>
+          <select id="movie" name="movie" required>
+            <option value="" disabled selected>Loading movies…</option>
+          </select>
+        </div>
+
+        <div class="field">
+          <label for="type">Watch mode</label>
+          <select id="type" name="type">
+            <option value="movie">Notify me when any new date opens</option>
+            <option value="date">Notify me for one specific date</option>
+          </select>
+        </div>
+
+        <div class="field" id="dateField">
+          <label for="date">Date</label>
+          <input type="date" id="date" name="date" />
+        </div>
+
+        <button type="submit">Notify Me</button>
+      </form>
+
+      <p id="successMsg" class="success"><span class="dot"></span> You're all set — we'll email you when it opens.</p>
+    </div>
+  </div>
 
   <script>
     const typeSelect = document.getElementById('type');
@@ -78,7 +306,6 @@
       dateInput.required = isDateMode;
     });
 
-    // Populate cinema + movie dropdowns from the server's cached VOX data.
     async function loadOptions() {
       try {
         const res = await fetch('/options');
@@ -130,7 +357,7 @@
       });
 
       if (res.ok) {
-        document.getElementById('successMsg').style.display = 'block';
+        document.getElementById('successMsg').style.display = 'flex';
         e.target.reset();
         dateField.style.display = 'none';
       } else {
