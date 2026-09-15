@@ -9,15 +9,16 @@
   <link href="https://fonts.googleapis.com/css2?family=Oswald:wght@500;600;700&family=Work+Sans:wght@400;500;600&display=swap" rel="stylesheet" />
   <style>
     :root {
-      --bg: #15121a;
-      --bg-deep: #0f0d13;
-      --card: #1d1922;
+      --bg: #131113;
+      --bg-deep: #0a090a;
+      --card: #1c1a1c;
       --ivory: #f3ede1;
-      --ivory-dim: #b8b0c4;
-      --amber: #e8a33d;
-      --amber-dim: #a67428;
+      --ivory-dim: #a8a2a5;
+      --red: #b3242b;
+      --red-bright: #d13139;
       --teal: #4c9a8e;
-      --rule: #35303f;
+      --rule: #332e30;
+      --test: #44423F;
     }
 
     * { box-sizing: border-box; }
@@ -26,7 +27,8 @@
       margin: 0;
       min-height: 100vh;
       background:
-        radial-gradient(ellipse 900px 500px at 50% -10%, #2a2233 0%, transparent 60%),
+        radial-gradient(ellipse 700px 900px at -5% -15%, rgba(243, 237, 225, 0.07) 0%, transparent 55%),
+        radial-gradient(ellipse 700px 900px at 105% -15%, rgba(243, 237, 225, 0.07) 0%, transparent 55%),
         var(--bg);
       color: var(--ivory);
       font-family: 'Work Sans', sans-serif;
@@ -36,14 +38,104 @@
       padding: 48px 20px;
     }
 
+
+    /* --- Spotlights --- */
+    .lamp {
+      position: fixed;
+      top: -26px;
+      width: 170px;
+      height: 64px;
+      border-radius: 50%;
+      background: radial-gradient(ellipse at center, rgba(243, 237, 225, 0.55) 0%, rgba(243, 237, 225, 0.12) 45%, transparent 70%);
+      filter: blur(9px);
+      pointer-events: none;
+      z-index: 0;
+      animation: lampBreathe 5s ease-in-out infinite;
+    }
+    .lamp-left { left: max(18vw - 85px, 0px); }
+    .lamp-right { right: max(18vw - 85px, 0px); animation-delay: 0.6s; }
+
+    @keyframes lampBreathe {
+      0%, 100% { opacity: 0.8; }
+      50% { opacity: 1; }
+    }
+
+    .beam {
+      position: fixed;
+      top: -8vh;
+      width: 52vw;
+      height: 128vh;
+      pointer-events: none;
+      z-index: 0;
+      filter: blur(22px);
+    }
+    .beam-left {
+      left: -8vw;
+      background: linear-gradient(198deg, rgba(243, 237, 225, 0.5) 0%, rgba(243, 237, 225, 0.18) 38%, rgba(243, 237, 225, 0.05) 62%, transparent 78%);
+      clip-path: polygon(36% 0%, 52% 0%, 100% 100%, 18% 100%);
+      transform-origin: 44% 0%;
+      transform: rotate(14deg);
+      animation: swayLeft 8s ease-in-out infinite;
+    }
+    .beam-right {
+      right: -8vw;
+      background: linear-gradient(162deg, rgba(243, 237, 225, 0.5) 0%, rgba(243, 237, 225, 0.18) 38%, rgba(243, 237, 225, 0.05) 62%, transparent 78%);
+      clip-path: polygon(48% 0%, 64% 0%, 82% 100%, 0% 100%);
+      transform-origin: 56% 0%;
+      transform: rotate(-14deg);
+      animation: swayRight 9.5s ease-in-out infinite;
+    }
+
+    @keyframes swayLeft {
+      0%, 100% { transform: rotate(14deg); opacity: 0.85; }
+      50% { transform: rotate(17deg); opacity: 1; }
+    }
+    @keyframes swayRight {
+      0%, 100% { transform: rotate(-14deg); opacity: 0.9; }
+      50% { transform: rotate(-17deg); opacity: 1; }
+    }
+
+    .beam::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(180deg, rgba(243, 237, 225, 0.3) 0%, transparent 45%);
+      clip-path: inherit;
+      filter: blur(4px);
+    }
+
+    .pool {
+      position: fixed;
+      left: 50%;
+      top: 56%;
+      width: min(72vw, 900px);
+      height: 64vh;
+      transform: translate(-50%, -50%);
+      background: radial-gradient(ellipse at center, rgba(243, 237, 225, 0.07) 0%, transparent 62%);
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      .beam-left, .beam-right, .lamp { animation: none; }
+    }
+    
+
+
+    /* FIX: Lovable's version dropped this width constraint, which let the
+       card stretch to fill the whole viewport width with nothing capping
+       it. Restoring it keeps the ticket at a fixed, compact size regardless
+       of window width or how long any selected option text is. */
     .wrap {
+      position: relative;
+      z-index: 1;
       width: 100%;
       max-width: 440px;
     }
 
     .marquee {
       text-align: center;
-      margin-bottom: 28px;
+      margin-bottom: 32px;
     }
 
     .marquee .bulbs {
@@ -57,7 +149,7 @@
       width: 6px;
       height: 6px;
       border-radius: 50%;
-      background: var(--amber-dim);
+      background: rgba(243, 237, 225, 0.25);
       animation: glow 2.4s ease-in-out infinite;
     }
 
@@ -65,8 +157,8 @@
     .marquee .bulbs span:nth-child(3n) { animation-delay: 0.4s; }
 
     @keyframes glow {
-      0%, 100% { background: var(--amber-dim); box-shadow: none; }
-      50% { background: var(--amber); box-shadow: 0 0 8px 1px rgba(232, 163, 61, 0.6); }
+      0%, 100% { background: rgba(243, 237, 225, 0.25); box-shadow: none; }
+      50% { background: var(--ivory); box-shadow: 0 0 8px 1px rgba(243, 237, 225, 0.55); }
     }
 
     .marquee h1 {
@@ -94,14 +186,9 @@
       background: var(--card);
       border-radius: 14px;
       padding: 30px 30px 30px;
-      box-shadow: 0 30px 60px -20px rgba(0, 0, 0, 0.6);
+      box-shadow: 0 30px 60px -20px rgba(0, 0, 0, 0.7);
     }
 
-    /* Stub header: label + perforation live in normal document flow now,
-       instead of being absolutely positioned with a hardcoded pixel
-       offset. This means the dashed line and notches always sit exactly
-       where the stub content actually ends, regardless of font-loading
-       timing, viewport width, or zoom level. */
     .stub {
       position: relative;
       margin: 0 -30px 24px;
@@ -118,6 +205,7 @@
       height: 22px;
       background: var(--bg);
       border-radius: 50%;
+      box-shadow: inset 0 2px 3px rgba(0, 0, 0, 0.55), inset 0 -1px 1px rgba(243, 237, 225, 0.04);
     }
     .stub::before { left: -11px; }
     .stub::after { right: -11px; }
@@ -126,7 +214,7 @@
       font-family: 'Oswald', sans-serif;
       font-size: 0.72rem;
       letter-spacing: 0.14em;
-      color: var(--amber);
+      color: var(--red-bright);
       margin: 0;
     }
 
@@ -158,18 +246,18 @@
     }
 
     select {
-      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%23b8b0c4' stroke-width='1.5' fill='none' fill-rule='evenodd'/%3E%3C/svg%3E");
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%23a8a2a5' stroke-width='1.5' fill='none' fill-rule='evenodd'/%3E%3C/svg%3E");
       background-repeat: no-repeat;
       background-position: right 4px center;
       padding-right: 20px;
+      text-overflow: ellipsis;
+      overflow: hidden;
+      white-space: nowrap;
     }
 
-    /* Explicitly style optgroup labels - browsers use their own default
-       (usually a faint gray) that ignores the option styling below,
-       which made "Coming Soon" unreadable against the dark background. */
     select optgroup {
       background: var(--card);
-      color: var(--amber);
+      color: var(--red-bright);
       font-family: 'Work Sans', sans-serif;
       font-style: normal;
       font-weight: 600;
@@ -183,14 +271,14 @@
 
     input:focus, select:focus {
       outline: none;
-      border-bottom-color: var(--amber);
+      border-bottom-color: var(--red-bright);
     }
 
-    input::placeholder { color: #6b6478; }
+    input::placeholder { color: #6b6567; }
 
     .hint {
       font-size: 0.78rem;
-      color: #6b6478;
+      color: #6b6567;
       margin-top: 5px;
     }
 
@@ -200,8 +288,8 @@
       width: 100%;
       margin-top: 30px;
       padding: 14px;
-      background: var(--amber);
-      color: var(--bg-deep);
+      background: var(--red);
+      color: var(--ivory);
       border: none;
       border-radius: 8px;
       font-family: 'Oswald', sans-serif;
@@ -213,7 +301,7 @@
       transition: background 0.15s ease, transform 0.1s ease;
     }
 
-    button:hover { background: #f0b358; }
+    button:hover { background: var(--red-bright); }
     button:active { transform: scale(0.98); }
 
     .success {
@@ -236,9 +324,24 @@
       background: var(--teal);
       flex-shrink: 0;
     }
+    @media (max-width: 640px) {
+      .beam { width: 90vw; opacity: 0.65; }
+      .lamp-left { left: 4vw; }
+      .lamp-right { right: 4vw; }
+      .stub::before,
+      .stub::after {
+        display: none;
+      }
+    }
   </style>
 </head>
 <body>
+  <div class="beam beam-left"></div>
+  <div class="beam beam-right"></div>
+  <div class="pool"></div>
+  <div class="lamp lamp-left"></div>
+  <div class="lamp lamp-right"></div>
+
   <div class="wrap">
     <div class="marquee">
       <div class="bulbs">
