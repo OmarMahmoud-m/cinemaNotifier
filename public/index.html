@@ -18,7 +18,6 @@
       --red-bright: #d13139;
       --teal: #4c9a8e;
       --rule: #332e30;
-      --test: #44423F;
     }
 
     * { box-sizing: border-box; }
@@ -95,6 +94,7 @@
       50% { transform: rotate(-17deg); opacity: 1; }
     }
 
+    /* hot core inside each beam for that dusty projector-light feel */
     .beam::after {
       content: '';
       position: absolute;
@@ -104,6 +104,7 @@
       filter: blur(4px);
     }
 
+    /* soft pool of light where the beams land in the middle */
     .pool {
       position: fixed;
       left: 50%;
@@ -119,18 +120,16 @@
     @media (prefers-reduced-motion: reduce) {
       .beam-left, .beam-right, .lamp { animation: none; }
     }
-    
+    @media (max-width: 640px) {
+      .beam { width: 90vw; opacity: 0.65; }
+      .lamp-left { left: 4vw; }
+      .lamp-right { right: 4vw; }
+    }
 
 
-    /* FIX: Lovable's version dropped this width constraint, which let the
-       card stretch to fill the whole viewport width with nothing capping
-       it. Restoring it keeps the ticket at a fixed, compact size regardless
-       of window width or how long any selected option text is. */
     .wrap {
       position: relative;
       z-index: 1;
-      width: 100%;
-      max-width: 440px;
     }
 
     .marquee {
@@ -182,13 +181,26 @@
     }
 
     .ticket {
+      --tear-y: 59px;
+      --tear-radius: 11px;
       position: relative;
       background: var(--card);
       border-radius: 14px;
       padding: 30px 30px 30px;
       box-shadow: 0 30px 60px -20px rgba(0, 0, 0, 0.7);
+      -webkit-mask-image:
+        radial-gradient(circle at left var(--tear-y), transparent var(--tear-radius), #000 calc(var(--tear-radius) + 0.5px)),
+        radial-gradient(circle at right var(--tear-y), transparent var(--tear-radius), #000 calc(var(--tear-radius) + 0.5px));
+      -webkit-mask-composite: source-in;
+      mask-image:
+        radial-gradient(circle at left var(--tear-y), transparent var(--tear-radius), #000 calc(var(--tear-radius) + 0.5px)),
+        radial-gradient(circle at right var(--tear-y), transparent var(--tear-radius), #000 calc(var(--tear-radius) + 0.5px));
+      mask-composite: intersect;
     }
 
+    /* Stub header: label + perforation live in normal document flow, so
+       the dashed line and notches always sit exactly where the stub
+       content ends, regardless of font-loading, viewport, or zoom. */
     .stub {
       position: relative;
       margin: 0 -30px 24px;
@@ -198,17 +210,8 @@
 
     .stub::before,
     .stub::after {
-      content: '';
-      position: absolute;
-      bottom: -11px;
-      width: 22px;
-      height: 22px;
-      background: var(--bg);
-      border-radius: 50%;
-      box-shadow: inset 0 2px 3px rgba(0, 0, 0, 0.55), inset 0 -1px 1px rgba(243, 237, 225, 0.04);
+      content: none;
     }
-    .stub::before { left: -11px; }
-    .stub::after { right: -11px; }
 
     .stub-label {
       font-family: 'Oswald', sans-serif;
@@ -250,9 +253,6 @@
       background-repeat: no-repeat;
       background-position: right 4px center;
       padding-right: 20px;
-      text-overflow: ellipsis;
-      overflow: hidden;
-      white-space: nowrap;
     }
 
     select optgroup {
@@ -323,15 +323,6 @@
       border-radius: 50%;
       background: var(--teal);
       flex-shrink: 0;
-    }
-    @media (max-width: 640px) {
-      .beam { width: 90vw; opacity: 0.65; }
-      .lamp-left { left: 4vw; }
-      .lamp-right { right: 4vw; }
-      .stub::before,
-      .stub::after {
-        display: none;
-      }
     }
   </style>
 </head>
